@@ -152,8 +152,17 @@ function computeApproved($pattern_array, $KEY_LENGTH) {
 	return $approvedkeys;
 }
 
-// Takes int and compute if int is within displayable ASCII.
-
+/** Takes int and compute if int is within displayable ASCII. 
+ * If true, returns what was given
+ * If false, returns FALSE */
+function isPrintable($asciiNum) {
+    if ($asciiNum > 31 && $asciiNum < 127) {
+        return($asciiNum);
+    }
+    else {
+        return(FALSE);
+    }
+}
 
 fclose($file);
 ?>
