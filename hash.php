@@ -60,10 +60,34 @@ for ($j = 0; $j < count($keylower); $j++) {
     }
 }
 
-sort($patterns[1]);
-print_r($patterns[1]);
-die();
+/**
+	takes: $keyChar = decimal value of the ascii key value
+	$originalByte = 8-bit binary representation of the original encrypted byte
+	$hashMap = The hashing algorithm map
 
+	returns: the decimal value of the decoded byte 
+*/
+function decodeByte($keyChar, $originalByte, $hashMap) {
+	$key_in_binary = str_pad(decbin($keyChar), "0", 8);
+	$keyupper_binary = substr($key_in_binary, 0, 4);
+	$keylower_binary = substr($key_in_binary, 4, 4);
+	$originalByte_upper = substr($originalByte, 0, 4);
+	$originalByte_lower = substr($originalByte, 4, 4);
+	$i = 0;
+	foreach ($hashMap as $col) {
+		if ($col[bindec($keylower_binary)] == bindec($originalByte_upper)) {
+			$decrypted_upper_dec = $i;
+		}
+		if ($col[bindec($keyupper_binary)] == $bindec($originalByte_lower)) {
+			$decrypted_lower_dec = $i;
+		}
+		$i++;
+	}
+	$decrypted_upper_bin = str_pad(decbin($decrypted_upper_dec), "0", 4);
+	$decrypted_lower_bin = str_pad(decbin($decrypted_lower_dec), "0", 4);
+	$decrypted = bindec($decrypted_upper_bin . $decrypted_lower_bin);
+	return $decrypted; 	
+}
 // Used for computing potential key lengths
 /*$success = array();
 for ($j = 1; $j < 444; $j++) {
@@ -124,7 +148,7 @@ function assertKey($sourceText, $hashmap, $key) {
 	return $result;
 }
 
-function computeApproved($pattern_array, $KEY_LENGTH) {
+function computeRepeatedKeys($pattern_array, $KEY_LENGTH) {
 	$count = 0;
 	$approvedkeys = array();
 	for ($j = 0; $j < $KEY_LENGTH; $j++) {
