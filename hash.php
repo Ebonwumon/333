@@ -48,10 +48,11 @@ $patterns = array();
 
 for ($j = 0; $j < count($keylower); $j++) {
     for($k = 0; $k < 16; $k++) {
-        //Takes binary representation of keyupper and pads with zeros (4 bit nibble)
+        //Takes binary representation of keyupper/keylower and pads with zeros (4 bit nibble)
         $keyupperbin = str_pad(decbin($keyupper[$j][$k]), 4, "0", STR_PAD_LEFT);
 	for ($l = 0; $l < 16; $l++) {
             $keylowerbin = str_pad(decbin($keylower[$j][$l]), 4, "0", STR_PAD_LEFT);
+            //Adds halves together to make an ASCII character (1byte)
             $ascii = bindec($keyupperbin . $keylowerbin);
             if (($ascii > 47 && $ascii < 58) || ($ascii > 64 && $ascii < 91) || ($ascii > 96 && $ascii < 123)) {
                 $patterns[$j][] = $ascii;
@@ -173,6 +174,18 @@ function computeRepeatedKeys($pattern_array, $KEY_LENGTH) {
 		}
 	}
 	return $approvedkeys;
+}
+
+/** Takes int and compute if int is within displayable ASCII. 
+ * If true, returns what was given
+ * If false, returns FALSE */
+function isPrintable($asciiNum) {
+    if ($asciiNum > 31 && $asciiNum < 127) {
+        return($asciiNum);
+    }
+    else {
+        return(FALSE);
+    }
 }
 
 fclose($file);
