@@ -19,20 +19,23 @@ array(0xf, 0x4, 0x1, 0x6, 0x0, 0x2, 0x3, 0x7, 0xb, 0xa, 0x8, 0x9, 0xd, 0xe, 0xc,
 
 $file = fopen("Downloads/ciphertext1", "r");
 
+// Nibbles of key characters
 $keylower = array();
 $keyupper = array();
 $originalBytes = array();
 $i = 0;
 
 while (!feof($file)) {
-	$raw_byte = fread($file, 1);
+	$raw_byte = fread($file, 1); 
+        //Converting it to a binary string, adding 0 to left if not 8 bits
 	$byte = str_pad(decbin(ord($raw_byte)), 8, "0", STR_PAD_LEFT);
-	$originalBytes[] = $byte;
-	$bit1 = substr($byte, 0, 4);
-	$bit2 = substr($byte, 4, 4);
+        $originalBytes[] = $byte;
+	$bit1 = substr($byte, 0, 4); //Breaks byte into halves
+        $bit2 = substr($byte, 4, 4);
+        //Searches for column index of each key nibble and puts it into an array
 	foreach ($map as $col) {
 		$ind = array_search(bindec($bit1), $col);
-		$keylower[$i][]=$ind;	
+		$keylower[$i][]=$ind; 	
 		$ind = array_search(bindec($bit2), $col);
 		$keyupper[$i][]=$ind;	
 	}
@@ -40,20 +43,23 @@ while (!feof($file)) {
 	
 }
 
+//All possible ASCII characters
 $patterns = array();
 
 for ($j = 0; $j < count($keylower); $j++) {
-	for($k = 0; $k < 16; $k++) {
-		$keyupperbin = str_pad(decbin($keyupper[$j][$k]), 4, "0", STR_PAD_LEFT);
-		for ($l = 0; $l < 15; $l++) {
-			$keylowerbin = str_pad(decbin($keylower[$j][$l]), 4, "0", STR_PAD_LEFT);
-			$ascii = bindec($keyupperbin . $keylowerbin);
-			if (($ascii > 47 && $ascii < 58) || ($ascii > 64 && $ascii < 91) || ($ascii > 96 && $ascii < 123)) {
-				$patterns[$j][] = $ascii;
-			}
-		}
-	}
+    for($k = 0; $k < 16; $k++) {
+        //Takes binary representation of keyupper and pads with zeros (4 bit nibble)
+        $keyupperbin = str_pad(decbin($keyupper[$j][$k]), 4, "0", STR_PAD_LEFT);
+	for ($l = 0; $l < 16; $l++) {
+            $keylowerbin = str_pad(decbin($keylower[$j][$l]), 4, "0", STR_PAD_LEFT);
+            $ascii = bindec($keyupperbin . $keylowerbin);
+            if (($ascii > 47 && $ascii < 58) || ($ascii > 64 && $ascii < 91) || ($ascii > 96 && $ascii < 123)) {
+                $patterns[$j][] = $ascii;
+            }
+        }
+    }
 }
+
 sort($patterns[1]);
 print_r($patterns[1]);
 die();
