@@ -17,7 +17,7 @@ array(0xc, 0x7, 0x4, 0xf, 0x5, 0x1, 0x0, 0xe, 0x2, 0x3, 0xb, 0xa, 0x8, 0xd, 0x9,
 array(0xa, 0xd, 0xe, 0x9, 0xf, 0x7, 0x6, 0x8, 0x4, 0x5, 0x1, 0x0, 0x2, 0xb, 0x3, 0xc),
 array(0xf, 0x4, 0x1, 0x6, 0x0, 0x2, 0x3, 0x7, 0xb, 0xa, 0x8, 0x9, 0xd, 0xe, 0xc, 0x5));
 
-$file = fopen("Downloads/ciphertext1", "r");
+$file = fopen("ciphertext1", "r");
 
 // Nibbles of key characters
 $keylower = array();
@@ -61,6 +61,9 @@ for ($j = 0; $j < count($keylower); $j++) {
     }
 }
 
+print(decodeByte(100, $originalBytes[0], $map));
+die();
+
 /**
 	takes: $keyChar = decimal value of the ascii key value
 	$originalByte = 8-bit binary representation of the original encrypted byte
@@ -79,7 +82,7 @@ function decodeByte($keyChar, $originalByte, $hashMap) {
 		if ($col[bindec($keylower_binary)] == bindec($originalByte_upper)) {
 			$decrypted_upper_dec = $i;
 		}
-		if ($col[bindec($keyupper_binary)] == $bindec($originalByte_lower)) {
+		if ($col[bindec($keyupper_binary)] == bindec($originalByte_lower)) {
 			$decrypted_lower_dec = $i;
 		}
 		$i++;
@@ -89,6 +92,15 @@ function decodeByte($keyChar, $originalByte, $hashMap) {
 	$decrypted = bindec($decrypted_upper_bin . $decrypted_lower_bin);
 	return $decrypted; 	
 }
+
+
+/**
+	Takes: 
+*/
+function determinePotentialKeyCharactersForByte($keys, $originalByte, $hashMap) {
+	
+}
+
 // Used for computing potential key lengths
 /*$success = array();
 for ($j = 1; $j < 444; $j++) {
@@ -101,7 +113,6 @@ print_r($success);
 
 die();*/
 
-$working_potential_keys = computeApproved($patterns, 36);
 
 $key = array('length' => 36, 'assert' => array('key' => '0', 'value' => str_pad(decbin($working_potential_keys[0][8]), 8, "0", STR_PAD_LEFT)));
 
