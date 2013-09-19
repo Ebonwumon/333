@@ -61,7 +61,7 @@ for ($j = 0; $j < count($keylower); $j++) {
     }
 }
 
-print(decodeByte(100, $originalBytes[0], $map));
+print_r(determinePotentialKeyCharactersForByte($patterns[0], $originalBytes[0], $map));
 die();
 
 /**
@@ -72,7 +72,7 @@ die();
 	returns: the decimal value of the decoded byte 
 */
 function decodeByte($keyChar, $originalByte, $hashMap) {
-	$key_in_binary = str_pad(decbin($keyChar), "0", 8);
+	$key_in_binary = str_pad(decbin($keyChar), 8, "0", STR_PAD_LEFT);
 	$keyupper_binary = substr($key_in_binary, 0, 4);
 	$keylower_binary = substr($key_in_binary, 4, 4);
 	$originalByte_upper = substr($originalByte, 0, 4);
@@ -87,8 +87,8 @@ function decodeByte($keyChar, $originalByte, $hashMap) {
 		}
 		$i++;
 	}
-	$decrypted_upper_bin = str_pad(decbin($decrypted_upper_dec), "0", 4);
-	$decrypted_lower_bin = str_pad(decbin($decrypted_lower_dec), "0", 4);
+	$decrypted_upper_bin = str_pad(decbin($decrypted_upper_dec), 4, "0", STR_PAD_LEFT);
+	$decrypted_lower_bin = str_pad(decbin($decrypted_lower_dec), 4, "0", STR_PAD_LEFT);
 	$decrypted = bindec($decrypted_upper_bin . $decrypted_lower_bin);
 	return $decrypted; 	
 }
@@ -98,7 +98,14 @@ function decodeByte($keyChar, $originalByte, $hashMap) {
 	Takes: 
 */
 function determinePotentialKeyCharactersForByte($keys, $originalByte, $hashMap) {
-	
+	$printable_keys = array();
+	foreach ($keys as $key) {
+		$print = isPrintable(decodeByte($key, $originalByte, $hashMap));
+		if ($print !== FALSE) {
+			$printable_keys[] = $print;
+		}
+	}
+	return $printable_keys;	
 }
 
 // Used for computing potential key lengths
