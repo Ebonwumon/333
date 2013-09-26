@@ -177,7 +177,7 @@ function computeRepeatedKeys($pattern_array, $KEY_LENGTH) {
  * If false, returns FALSE */
 function isPrintable($asciiNum) {
     if (($asciiNum > 31 && $asciiNum < 127) || $asciiNum == 9 || $asciiNum == 10 || $asciiNum == 13) {
-        return($asciiNum);
+ 	   return($asciiNum);
     }
     else {
         return(FALSE);
