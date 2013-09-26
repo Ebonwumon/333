@@ -1,5 +1,10 @@
 <?php
 
+/*      Datatype to represnt a single byte.
+        Functions for converting byte to string of binary representation,
+        getting the upper and lower 4 bits of the byte, 
+        and getting the ASCII representation. 
+*/
 class HashByte {
 	
 	public $byte;
@@ -51,7 +56,8 @@ array(0xf, 0x4, 0x1, 0x6, 0x0, 0x2, 0x3, 0x7, 0xb, 0xa, 0x8, 0x9, 0xd, 0xe, 0xc,
 
 
 /**
-	takes: $key = A HashByte of the current Key character 
+	Takes:
+        $key = A HashByte of the current Key character 
 	$originalByte = A HashByte of the original cryptographic hash byte.
 	$hashMap = The hashing algorithm map
 
@@ -72,9 +78,14 @@ function decodeByte($key, $originalByte, $hashMap) {
 	return $decryptedHashByte->getASCII(); 	
 }
 
-
 /**
 	Takes: 
+        $keys = All the alphanumeric keys
+        $originalByte = Current byte from ciphertext
+        $hashMap = The hashing algorithm map
+
+        Takes all possible alphanumeric keys (62 total) and checks if decrypting current
+        byte with each key results in printable ASCII. Printable keys are saved in an array.
 */
 function determinePotentialKeyCharactersForByte($keys, $originalByte, $hashMap) {
 	$printable_keys = array();
@@ -87,19 +98,28 @@ function determinePotentialKeyCharactersForByte($keys, $originalByte, $hashMap) 
 	return $printable_keys;	
 }
 
+/**
+        Takes:
+        $key = Key being tested 
+        $length = Assumed key length
+        $originalBytes = All bytes in cihpertext file
+        $map = Encryption map
 
-function assertKeyCharacter($key, $key_position, $key_length, $originalBytes, $map) {
+        Checks if every byte decoded with predicted key is printable ASCII.
+*/
+function assertKeyCharacter($key, $length, $originalBytes, $map) {
 	for ($i = 0; $i < count($originalBytes); $i++) {
-		if ($i % $key_length != $key_position) continue;
+		if ($i % $length =! 0) continue; 
 		$decoded = decodeByte($key, $originalBytes[$i], $map);
 		if (isPrintable($decoded) !== FALSE) continue;
 		else return false;
 	}
+	print("returning");
 
 	return $key;
 }
 
-/** Takes:
+/**     Takes:
 	$sourceText: array of 8-bit encrypted source characters (padded with 0's to the left)
 	$hashMap: the mapping of the encryption scheme
 	$key: [ 'length' => of key,
@@ -140,38 +160,46 @@ function assertKey($sourceText, $hashmap, $key) {
 	return $result;
 }
 
-
+/**
+        Takes:
+        $pattern_array = List of all possible keys for eac letter
+        $KEY_LENGTH = Consant for key length
+*/
 function computeRepeatedKeys($pattern_array, $KEY_LENGTH) {
-    $repeated_keys = array();
-
-	$approved_keys = array();
+	$count = 0;
+	$approvedkeys = array();
 	for ($j = 0; $j < $KEY_LENGTH; $j++) {
-		$approved_keys[] = $pattern_array[$j];
+		$approvedkeys[] = $pattern_array[$j];
 	}
-
-	$approvedkeysiterable = $approved_keys;
+	$approvedkeysiterable = $approvedkeys;
 	for ($j = $KEY_LENGTH; $j < count($pattern_array); $j++) {
 		foreach ($approvedkeysiterable[$j % $KEY_LENGTH] as $value) {
 			if (array_search($value, $pattern_array[$j]) === FALSE) {
-				$removeKey = array_search($value, $approved_keys[$j % $KEY_LENGTH]);
+				$removeKey = array_search($value, $approvedkeys[$j % $KEY_LENGTH]);
 				if ($removeKey !== FALSE) {
-					unset($approved_keys[$j % $KEY_LENGTH][$removeKey]);
+					
+					//print("Value " . $value . "\n");
+					//print($j % $KEY_LENGTH .  "(" . $j . "): " . $approvedkeys[$j % $KEY_LENGTH][$removeKey] . " removed from " . $j % $KEY_LENGTH . "\n"); 
+					unset($approvedkeys[$j % $KEY_LENGTH][$removeKey]);
 				}
 			}
 		}
 	}
 
-	foreach ($approved_keys as $arr) {
+	
+	foreach ($approvedkeys as $arr) {
 		if (count($arr) == 0) {
 			return false;
 		}
 	}
-	return $approved_keys;
+	return $approvedkeys;
 }
 
-/** Takes int and compute if int is within displayable ASCII. 
- * If true, returns what was given
- * If false, returns FALSE */
+/** 
+        Takes an int and computes if the int is within displayable ASCII. 
+        If true, returns int which was given.
+        If false, returns FALSE 
+*/
 function isPrintable($asciiNum) {
     if (($asciiNum > 31 && $asciiNum < 127) || $asciiNum == 9 || $asciiNum == 10 || $asciiNum == 13) {
  	   return($asciiNum);

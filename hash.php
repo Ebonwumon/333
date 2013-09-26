@@ -8,7 +8,6 @@ require_once('hash_lib.php');
 $keyBytes = array();
 $originalBytes = array();
 $i = 0;
-$KEY_LENGTH = 8;
 
 $file = fopen("ciphertext1", "r");
 while (!feof($file)) {
@@ -44,36 +43,25 @@ foreach ($keyBytes as $keys) {
 $l++;
 }
 
-$possible_characters = array();
-for ($i = 0; $i < $KEY_LENGTH; $i++) {
-    foreach ($alphanumeric_keys[$i] as $key) {
-        $result = assertKeyCharacter($key, $i, $KEY_LENGTH, $originalBytes, $map);
-        if ($result !== FALSE) {
-            $possible_characters[$i][] = chr($result->getASCII());
-        }
-    }
-}
+$possible_characters = $alphanumeric_keys;
+//$possible_characters = array();
 
-print_r($possible_characters);
-
-die();
-/*
-for($j = 0; $j < count($alphanumeric_keys); $j++) {
+/*for($j = 0; $j < count($alphanumeric_keys); $j++) {	
 	$dec = determinePotentialKeyCharactersForByte($alphanumeric_keys[$j], $originalBytes[$j], $map); 
-	$possible_characters[$j] = $dec;
+	$possible_characters[] = $dec;
 	//$possible_characters[] = new HashByte($dec);
 }
 
-print_r($possible_characters);
-
 // Used for computing potential key lengths
+print_r($possible_characters[0]);
+die();
 $repeated_keys = computeRepeatedKeys($possible_characters, 8);
 if ($repeated_keys === FALSE) {
 	print ("Keys do not repeat \n");
 	die();
 }
 print_r($repeated_keys);
-die();
+die();*/
 
 $i = 0;
 $decryptable_key = array();
@@ -98,7 +86,7 @@ for ($j = 1; $j < 444; $j++) {
 	if ($j == 20 ) { die(); }
 }
 print_r($success); 
-*/
+
 
 
 
