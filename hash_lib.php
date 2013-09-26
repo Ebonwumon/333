@@ -55,6 +55,26 @@ array(0xa, 0xd, 0xe, 0x9, 0xf, 0x7, 0x6, 0x8, 0x4, 0x5, 0x1, 0x0, 0x2, 0xb, 0x3,
 array(0xf, 0x4, 0x1, 0x6, 0x0, 0x2, 0x3, 0x7, 0xb, 0xa, 0x8, 0x9, 0xd, 0xe, 0xc, 0x5));
 
 
+function getHashArrayFromFile($filename, &$originalBytes, &$keyBytes, $map, $i = 0) {
+    $file = fopen($filename, "r");
+    while (!feof($file)) {
+        $raw_byte = fread($file, 1);
+        //Converting it to a binary string, adding 0 to left if not 8 bits
+        $byte = new HashByte(ord($raw_byte));
+        $originalBytes[] = $byte;
+        //Searches for column index of each key nibble and puts it into an array
+        foreach ($map as $col) {
+            $indUp = array_search(bindec($byte->getUpper()), $col);
+            $indLow = array_search(bindec($byte->getLower()), $col);
+            $hashByte = HashByte::fromTwoDecimals($indUp, $indLow);
+            $keyBytes[$i][] = $hashByte;
+        }
+        $i++;
+    }
+    fclose($file);
+    return $originalBytes;
+}
+
 /**
 	Takes:
         $key = A HashByte of the current Key character 
@@ -107,16 +127,58 @@ function determinePotentialKeyCharactersForByte($keys, $originalByte, $hashMap) 
 
         Checks if every byte decoded with predicted key is printable ASCII.
 */
-function assertKeyCharacter($key, $length, $originalBytes, $map) {
+function assertKeyCharacter($key, $key_position, $key_length, $originalBytes, $map) {
 	for ($i = 0; $i < count($originalBytes); $i++) {
-		if ($i % $length =! 0) continue; 
+		if ($i % $key_length != $key_position) continue;
 		$decoded = decodeByte($key, $originalBytes[$i], $map);
 		if (isPrintable($decoded) !== FALSE) continue;
 		else return false;
 	}
-	print("returning");
 
 	return $key;
+}
+
+
+function getAllKeys($arrays)
+{
+    $result = array();
+    $arrays = array_values($arrays);
+    $sizeIn = sizeof($arrays);
+    $size = $sizeIn > 0 ? 1 : 0;
+    foreach ($arrays as $array)
+        $size = $size * sizeof($array);
+    for ($i = 0; $i < $size; $i ++)
+    {
+        $result[$i] = array();
+        for ($j = 0; $j < $sizeIn; $j ++)
+            array_push($result[$i], current($arrays[$j]));
+        for ($j = ($sizeIn -1); $j >= 0; $j --)
+        {
+            if (next($arrays[$j]))
+                break;
+            elseif (isset ($arrays[$j]))
+                reset($arrays[$j]);
+        }
+    }
+    $strings = array();
+    foreach ($result as $string) {
+        $strings[] = implode($string);
+    }
+    return $strings;
+}
+
+function decryptWithKey($key, $originalBytes, $map) {
+    $result = "";
+    $KEY_LENGTH = strlen($key);
+    $keyhash = array();
+    foreach (str_split($key) as $chr) {
+        $keyhash[] = new HashByte(ord($chr));
+    }
+    for ($i = 0; $i < count($originalBytes); $i++) {
+        $result .= chr(decodeByte($keyhash[$i % $KEY_LENGTH], $originalBytes[$i], $map));
+    }
+
+    return $result;
 }
 
 /**     Takes:
@@ -177,9 +239,6 @@ function computeRepeatedKeys($pattern_array, $KEY_LENGTH) {
 			if (array_search($value, $pattern_array[$j]) === FALSE) {
 				$removeKey = array_search($value, $approvedkeys[$j % $KEY_LENGTH]);
 				if ($removeKey !== FALSE) {
-					
-					//print("Value " . $value . "\n");
-					//print($j % $KEY_LENGTH .  "(" . $j . "): " . $approvedkeys[$j % $KEY_LENGTH][$removeKey] . " removed from " . $j % $KEY_LENGTH . "\n"); 
 					unset($approvedkeys[$j % $KEY_LENGTH][$removeKey]);
 				}
 			}

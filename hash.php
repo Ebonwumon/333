@@ -6,25 +6,13 @@ require_once('hash_lib.php');
 
 // Nibbles of key characters
 $keyBytes = array();
-$originalBytes = array();
 $i = 0;
+$KEY_LENGTH = 8;
+$originalBytes = array();
+$keyBytes = array();
 
-$file = fopen("ciphertext1", "r");
-while (!feof($file)) {
-	$raw_byte = fread($file, 1); 
-        //Converting it to a binary string, adding 0 to left if not 8 bits
-	$byte = new HashByte(ord($raw_byte));
-        $originalBytes[] = $byte;
-	//Searches for column index of each key nibble and puts it into an array
-	foreach ($map as $col) {
-		$indUp = array_search(bindec($byte->getUpper()), $col);
-		$indLow = array_search(bindec($byte->getLower()), $col);
-		$hashByte = HashByte::fromTwoDecimals($indUp, $indLow);
-		$keyBytes[$i][] = $hashByte;		
-	}
-	$i++;
-}
-fclose($file);
+getHashArrayFromFile("ciphertext1", $originalBytes, $keyBytes, $map);
+
 //All possible ASCII characters
 $alphanumeric_keys = array();
 
@@ -43,7 +31,30 @@ foreach ($keyBytes as $keys) {
 $l++;
 }
 
-$possible_characters = $alphanumeric_keys;
+
+$possible_characters = array();
+for ($i = 0; $i < $KEY_LENGTH; $i++) {
+    foreach ($alphanumeric_keys[$i] as $key) {
+        $result = assertKeyCharacter($key, $i, $KEY_LENGTH, $originalBytes, $map);
+        if ($result !== FALSE) $possible_characters[$i][] = chr($result->getASCII());
+    }
+}
+
+$potential_keys = getAllKeys($possible_characters);
+
+if (count($potential_keys) > 1 ) {
+    print("Choose a key to try: \n");
+    $i = 0;
+    foreach ($potential_keys as $key) {
+        print ("[" . $i . "] " . $key);
+        $i++;
+    }
+    $key_ind = trim(fgets(STDIN));
+    $decryption_candidate = decryptWithKey("2brodsky", $originalBytes, $map);
+    print($decryption_candidate);
+}
+
+/*$possible_characters = $alphanumeric_keys;
 //$possible_characters = array();
 
 /*for($j = 0; $j < count($alphanumeric_keys); $j++) {	
@@ -61,7 +72,7 @@ if ($repeated_keys === FALSE) {
 	die();
 }
 print_r($repeated_keys);
-die();*/
+die();
 
 $i = 0;
 $decryptable_key = array();
@@ -85,7 +96,7 @@ for ($j = 1; $j < 444; $j++) {
 	}
 	if ($j == 20 ) { die(); }
 }
-print_r($success); 
+print_r($success); */
 
 
 
