@@ -88,14 +88,13 @@ function determinePotentialKeyCharactersForByte($keys, $originalByte, $hashMap) 
 }
 
 
-function assertKeyCharacter($key, $length, $originalBytes, $map) {
+function assertKeyCharacter($key, $key_position, $key_length, $originalBytes, $map) {
 	for ($i = 0; $i < count($originalBytes); $i++) {
-		if ($i % $length =! 0) continue; 
+		if ($i % $key_length != $key_position) continue;
 		$decoded = decodeByte($key, $originalBytes[$i], $map);
 		if (isPrintable($decoded) !== FALSE) continue;
 		else return false;
 	}
-	print("returning");
 
 	return $key;
 }
@@ -143,33 +142,31 @@ function assertKey($sourceText, $hashmap, $key) {
 
 
 function computeRepeatedKeys($pattern_array, $KEY_LENGTH) {
-	$count = 0;
-	$approvedkeys = array();
+    $repeated_keys = array();
+
+	$approved_keys = array();
 	for ($j = 0; $j < $KEY_LENGTH; $j++) {
-		$approvedkeys[] = $pattern_array[$j];
+		$approved_keys[] = $pattern_array[$j];
 	}
-	$approvedkeysiterable = $approvedkeys;
+
+	$approvedkeysiterable = $approved_keys;
 	for ($j = $KEY_LENGTH; $j < count($pattern_array); $j++) {
 		foreach ($approvedkeysiterable[$j % $KEY_LENGTH] as $value) {
 			if (array_search($value, $pattern_array[$j]) === FALSE) {
-				$removeKey = array_search($value, $approvedkeys[$j % $KEY_LENGTH]);
+				$removeKey = array_search($value, $approved_keys[$j % $KEY_LENGTH]);
 				if ($removeKey !== FALSE) {
-					
-					//print("Value " . $value . "\n");
-					//print($j % $KEY_LENGTH .  "(" . $j . "): " . $approvedkeys[$j % $KEY_LENGTH][$removeKey] . " removed from " . $j % $KEY_LENGTH . "\n"); 
-					unset($approvedkeys[$j % $KEY_LENGTH][$removeKey]);
+					unset($approved_keys[$j % $KEY_LENGTH][$removeKey]);
 				}
 			}
 		}
 	}
 
-	
-	foreach ($approvedkeys as $arr) {
+	foreach ($approved_keys as $arr) {
 		if (count($arr) == 0) {
 			return false;
 		}
 	}
-	return $approvedkeys;
+	return $approved_keys;
 }
 
 /** Takes int and compute if int is within displayable ASCII. 
