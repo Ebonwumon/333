@@ -68,10 +68,8 @@ function decodeByte($key, $originalByte, $hashMap) {
 		}
 		$i++;
 	}
-	$decrypted_upper_bin = str_pad(decbin($decrypted_upper_dec), 4, "0", STR_PAD_LEFT);
-	$decrypted_lower_bin = str_pad(decbin($decrypted_lower_dec), 4, "0", STR_PAD_LEFT);
-	$decrypted = bindec($decrypted_upper_bin . $decrypted_lower_bin);
-	return $decrypted; 	
+	$decryptedHashByte = HashByte::fromTwoDecimals($decrypted_upper_dec, $decrypted_lower_dec);
+	return $decryptedHashByte->getASCII(); 	
 }
 
 
@@ -89,19 +87,18 @@ function determinePotentialKeyCharactersForByte($keys, $originalByte, $hashMap) 
 	return $printable_keys;	
 }
 
-// Used for computing potential key lengths
-/*$success = array();
-for ($j = 1; $j < 444; $j++) {
-	$bool = computeApproved($patterns, $j);
-	if ($bool) {
-		$success[] = $j;
+
+function assertKeyCharacter($key, $length, $originalBytes, $map) {
+	for ($i = 0; $i < count($originalBytes); $i++) {
+		if ($i % $length =! 0) continue; 
+		$decoded = decodeByte($key, $originalBytes[$i], $map);
+		if (isPrintable($decoded) !== FALSE) continue;
+		else return false;
 	}
+	print("returning");
+
+	return $key;
 }
-print_r($success);
-
-die();*/
-
-
 
 /** Takes:
 	$sourceText: array of 8-bit encrypted source characters (padded with 0's to the left)
@@ -144,6 +141,7 @@ function assertKey($sourceText, $hashmap, $key) {
 	return $result;
 }
 
+
 function computeRepeatedKeys($pattern_array, $KEY_LENGTH) {
 	$count = 0;
 	$approvedkeys = array();
@@ -152,17 +150,20 @@ function computeRepeatedKeys($pattern_array, $KEY_LENGTH) {
 	}
 	$approvedkeysiterable = $approvedkeys;
 	for ($j = $KEY_LENGTH; $j < count($pattern_array); $j++) {
-		foreach ($approvedkeysiterable[$j % $KEY_LENGTH] as $key => $value) {
+		foreach ($approvedkeysiterable[$j % $KEY_LENGTH] as $value) {
 			if (array_search($value, $pattern_array[$j]) === FALSE) {
 				$removeKey = array_search($value, $approvedkeys[$j % $KEY_LENGTH]);
 				if ($removeKey !== FALSE) {
-					//print($j .  ": " . $approvedkeys[$j % 9][$removeKey] . " removed from " . $j % 9 . "\n"); 
+					
+					//print("Value " . $value . "\n");
+					//print($j % $KEY_LENGTH .  "(" . $j . "): " . $approvedkeys[$j % $KEY_LENGTH][$removeKey] . " removed from " . $j % $KEY_LENGTH . "\n"); 
 					unset($approvedkeys[$j % $KEY_LENGTH][$removeKey]);
 				}
 			}
 		}
 	}
 
+	
 	foreach ($approvedkeys as $arr) {
 		if (count($arr) == 0) {
 			return false;
@@ -175,7 +176,7 @@ function computeRepeatedKeys($pattern_array, $KEY_LENGTH) {
  * If true, returns what was given
  * If false, returns FALSE */
 function isPrintable($asciiNum) {
-    if ($asciiNum > 31 && $asciiNum < 127) {
+    if (($asciiNum > 31 && $asciiNum < 127) || $asciiNum == 9 || $asciiNum == 10 || $asciiNum == 13) {
         return($asciiNum);
     }
     else {

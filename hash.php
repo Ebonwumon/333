@@ -3,13 +3,13 @@
 // all our helper functions and mapping is in the lib
 require_once('hash_lib.php');
 
-$file = fopen("ciphertext1", "r");
 
 // Nibbles of key characters
 $keyBytes = array();
 $originalBytes = array();
 $i = 0;
 
+$file = fopen("ciphertext1", "r");
 while (!feof($file)) {
 	$raw_byte = fread($file, 1); 
         //Converting it to a binary string, adding 0 to left if not 8 bits
@@ -19,11 +19,12 @@ while (!feof($file)) {
 	foreach ($map as $col) {
 		$indUp = array_search(bindec($byte->getUpper()), $col);
 		$indLow = array_search(bindec($byte->getLower()), $col);
-		$keyBytes[$i][] = HashByte::fromTwoDecimals($indUp, $indLow);
+		$hashByte = HashByte::fromTwoDecimals($indUp, $indLow);
+		$keyBytes[$i][] = $hashByte;		
 	}
 	$i++;
 }
-
+fclose($file);
 //All possible ASCII characters
 $alphanumeric_keys = array();
 
@@ -31,22 +32,61 @@ $l = 0;
 foreach ($keyBytes as $keys) {
 	for ($j = 0; $j < count($keys); $j++) {
 		for ($k = 0; $k < count($keys); $k++) {
-			$hashByte = new HashByte($keys[$j]->getUpper() . $keys[$k]->getLower());
+			$hashByte = new HashByte(bindec($keys[$j]->getUpper() . $keys[$k]->getLower()));
 			$ascii = $hashByte->getASCII();
 			if (($ascii > 47 && $ascii < 58) || ($ascii > 64 && $ascii < 91) || 
 			    ($ascii > 96 && $ascii < 123)) {
                 		$alphanumeric_keys[$l][] = $hashByte;
             		}
-		}	
+		}
 	}
 $l++;
 }
 
-$possible_characters = array();
-for($j = 0; $j < count($alphanumeric_keys); $j++) {	
-	$possible_characters[] = determinePotentialKeyCharactersForByte($alphanumeric_keys[$j], $originalBytes[$j], $map); 
+$possible_characters = $alphanumeric_keys;
+//$possible_characters = array();
+
+/*for($j = 0; $j < count($alphanumeric_keys); $j++) {	
+	$dec = determinePotentialKeyCharactersForByte($alphanumeric_keys[$j], $originalBytes[$j], $map); 
+	$possible_characters[] = $dec;
+	//$possible_characters[] = new HashByte($dec);
 }
 
-print_r($possible_characters);
+// Used for computing potential key lengths
+print_r($possible_characters[0]);
+die();
+$repeated_keys = computeRepeatedKeys($possible_characters, 8);
+if ($repeated_keys === FALSE) {
+	print ("Keys do not repeat \n");
+	die();
+}
+print_r($repeated_keys);
+die();*/
 
-fclose($file);
+$i = 0;
+$decryptable_key = array();
+foreach ($possible_characters[0] as $key) {
+	print_r($key);
+	if (assertKeyCharacter($key, 8, $originalBytes, $map)) {
+		$decryptable_key[$i][] = new HashByte($key); 	
+	}
+	$i++;
+	
+}
+
+print_r($decryptable_key);
+
+die();
+
+for ($j = 1; $j < 444; $j++) {
+	$bool = computeRepeatedKeys($possible_characters, $j);
+	if ($bool) {
+		$success[] = $j;
+	}
+	if ($j == 20 ) { die(); }
+}
+print_r($success); 
+
+
+
+
