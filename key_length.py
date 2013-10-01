@@ -9,38 +9,7 @@ check_byte = {byte}
 # Dictionary to keep track of byte distances 
 all_dist = dict()
 
-"""
-There doesnt appear to be EOF in python... 
-
-while (byte != EOF):
-    # Check this byte has not already been looked at
-    if (byte not in check_byte):
-        file.seek(file_position+1)
-        cur_byte = file.read(1)
-        while (cur_byte != EOF):
-            #Check if cur_byte matches byte
-            if (cur_byte == byte):
-                #Calculate distance between bytes
-                distance = ( file.tell() - file_position)
-                #Check if distance is in dictonary, if so increment
-                if (distance in all_dist):
-                    all_dist[distance] += 1
-                else:
-                    all_dist[distance] = 1
-            else: pass
-            cur_byte = file.read(1)
-        byte = file.read(1)
-    # If byte has already been checked, move to the next one
-    else:
-        file.seek(file_position+1)
-        byte = file.read(1)
-    # Increment to the next byte
-    file_position = file_postion + 1
-
-print (all_dist)
-"""
-
-while True:
+while True: # Using this because byte != EOF doesnt work in python
     # Check we are not at EOF
     if (len(byte) == 0):
         break
@@ -56,7 +25,7 @@ while True:
             # Check if cur_byte matches byte
             if (cur_byte == byte):
                 # Calculate distance between positions in file
-                distance = (file.tell() - file_position)
+                distance = (file.tell() - file_position) -1
                 # Check if distance is in dictionary, if so increment value
                 if (distance in all_dist):
                     all_dist[distance] += 1
@@ -74,3 +43,16 @@ while True:
     byte = file.read(1)
 
 print (all_dist)
+
+"""
+Filter results and display anything greater than FILTER_THRESHHOLD
+# Results are displayed in an (x,y) format. x is the distance and y is
+the number of times this distance occurs throughout the file.
+"""
+FILTER_THRESHHOLD = 10
+
+Frequent_dists = [(x,y) for x, y in all_dist.items() if y > FILTER_THRESHHOLD]
+
+print ("\nFILTERED RESULTS: (x,y) x is dist between keys & y is frequency")
+print (Frequent_dists)
+
