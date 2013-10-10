@@ -1,5 +1,9 @@
+import sys
+
 # Functions to compute potential key length by finding patterns in the ciphertext.
-file = open('ciphertext2', 'rb')
+filename = sys.argv[1]
+print(filename)
+file = open(filename, 'rb')
 
 # Read the first byte in the file, which is position 0
 file_position = 0
