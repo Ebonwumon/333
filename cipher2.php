@@ -7,7 +7,10 @@ $keyBytes = array();
 $KEY_LENGTH = 33; // Key length is determined before the running of the program, and inputted here.
 $maxChars = 500; // We're just going to work with the first 500 characters of the text
 
-getHashArrayFromFile("ciphertext2", $originalBytes, 0, $maxChars);
+print("Beginning decryption...\n");
+
+getHashArrayFromFile("ciphertext2", $originalBytes, $maxChars);
+
 // We want all printable characters and symbols included in our potential keyspace
 getKeySpace($keyBytes, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890~`!@#$%^&*()-_+=|[]{};:,.<>/?\\\"\'");
 
