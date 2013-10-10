@@ -1,0 +1,16 @@
+Encryption key: group4
+
+1) Inspect the contents of the .enc files.
+ECB: Identical ciphertext blocks. This is because ecb divides the plaintext into 8 byte blocks
+and encrypts each separately. But each block is encrypted with the same key, so trying to encrypt blocks
+of plaintext that are the same produces identical ciphertext blocks.
+
+CBC: No patterns or similarities to ciphertext encrypted with other forms of DES.
+
+CFB and OFB: No patterns in individual ciphertext files. However the first 8 bytes of both the files had
+the same ciphertext. This is because they are both initially encrypted in the same way, but the next 8 bytes are
+XORed at different points during encryption. 
+
+2) Impact of "error" on decryption.
+
+3) Ciphertext3 observations.
