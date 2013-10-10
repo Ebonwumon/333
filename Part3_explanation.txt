@@ -5,6 +5,11 @@ a) Sizes
 Plaintext: 80 bytes
 ECB and CBC: 88 bytes
 CFB and OFB: 80 bytes
+CFB and OFB are the same length of the plaintext because they do not use padding. They do not need to be
+padded, even if the blocks are not a multiple of 8 bytes.
+ECB and CBC are longer because they have an extra block of padding at the end. While in this case the cipher
+files did not need to be padded because they are both multiple of 8 bytes, the padding is most likely created
+so when decrypting, it is known all blocks have been recieved. 
 
 b) Patterns
 ECB: Identical ciphertext blocks. This is because ecb divides the plaintext into 8 byte blocks
@@ -18,6 +23,26 @@ the same ciphertext. This is because they are both initially encrypted in the sa
 XORed at different points during encryption. 
 
 2) Impact of "error" on decryption.
-ECB: Entire 3rd block 
+ECB: Entire 3rd block decrypted is decrypted incorrectly. Only this block is affected because each block is
+decrypted separately. 
+
+CBC: The entire 3rd block was decrypted incorrectly. The 27th character was also decrypted incorrectly.
+The 3rd block is corrupted because the error is in this block, so during decryption with the key
+the bytes are rearranged incorrectly. The 27th byte gets corrupted as well because the 4th block
+is XORed with the 3rd block during decrpytion. However, because the 3rd block has not been decrypted yet, only the
+19th byte has the error. This is why only the 27th byte is affect, instead of the entire 4th block.
+
+CFB: The 4th block was decrypted incorrectly as well as the 19th character. To decrypt the 3rd block, it's cipher text
+is XORed with the 2nd block that has been decrypted with the key. Since it is only XORed and not decrypted with the key
+yet, only the 19th byte is corrupted. The entire 4th block however comes out corrupted because the 3rd block cipher text
+is decypted with the key and then XORed with the 4th block cipher text. Decrypting the 3rd block with the key rearranges
+the bytes in the block, so this corrupted block is being XORed with block 4. 
+
+OFB: Only the 19th character was incorrect. This is because each block is only XORed with the initialization vector, which 
+is decrypted with the key before each XOR. Because it is only XORed and not decrypted with the key, only the 19th byte is
+corrupted.
 
 3) Ciphertext3 observations.
+The length of the file is 288 bytes, which is not a multiple of 40. There is an extra block (8 bytes) of padding added to the 
+length. The actual 280 bytes of the plaintext is divisible by 40 since 32 bytes on each line are reserved for the name and 
+the last 8 are for the salary. This means there are 7 employees in the file. We figured this out by 280 divided by 40.
