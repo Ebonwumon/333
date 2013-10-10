@@ -1,12 +1,12 @@
 # Functions to compute potential key length by finding patterns in the ciphertext.
-file = open('ciphertext2', 'rb')
+file = open('ciphertext1', 'rb')
 
 # Read the first byte in the file, which is position 0
 file_position = 0
 byte = file.read(1)
 
 # For filtering results of distance totals so low totals are not displayed
-FILTER_THRESHHOLD = 900
+FILTER_THRESHHOLD = 10
 
 # Dictionary to keep track of byte distances 
 all_dist = dict()
