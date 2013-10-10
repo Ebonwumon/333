@@ -58,7 +58,6 @@ array(0xf, 0x4, 0x1, 0x6, 0x0, 0x2, 0x3, 0x7, 0xb, 0xa, 0x8, 0x9, 0xd, 0xe, 0xc,
 /**
  * @param $filename: name of the ciphertext file to decrypt. Should be in same directory as php script
  * @param $originalBytes: reference to array where we will store the HashBytes that we load from the file
- * @param int $i : optional, if we wanted to read more byte
  * @return array : returns the resulting bytes - it should have been automatically loaded into the referenced array
  *      anyway
  */
