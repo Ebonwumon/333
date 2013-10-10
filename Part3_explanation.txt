@@ -1,6 +1,12 @@
 Encryption key: group4
 
 1) Inspect the contents of the .enc files.
+a) Sizes
+Plaintext: 80 bytes
+ECB and CBC: 88 bytes
+CFB and OFB: 80 bytes
+
+b) Patterns
 ECB: Identical ciphertext blocks. This is because ecb divides the plaintext into 8 byte blocks
 and encrypts each separately. But each block is encrypted with the same key, so trying to encrypt blocks
 of plaintext that are the same produces identical ciphertext blocks.
@@ -12,5 +18,6 @@ the same ciphertext. This is because they are both initially encrypted in the sa
 XORed at different points during encryption. 
 
 2) Impact of "error" on decryption.
+ECB: Entire 3rd block 
 
 3) Ciphertext3 observations.
