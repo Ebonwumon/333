@@ -4,7 +4,7 @@ require_once('hash_lib.php');
 
 $originalBytes = array();
 $keyBytes = array();
-$KEY_LENGTH = 8; // Key length is predetermined by a separate program
+$KEY_LENGTH = $argv[1]; // Key length is predetermined by a separate program
 // Our keyspace is only alphanumeric
 $keyspace = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\n\0";
 

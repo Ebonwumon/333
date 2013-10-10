@@ -4,7 +4,7 @@ require_once('libv2.php');
 
 $originalBytes = array();
 $keyBytes = array();
-$KEY_LENGTH = 33; // Key length is determined before the running of the program, and inputted here.
+$KEY_LENGTH = $argv[1]; // Key length is determined before the running of the program, and inputted here.
 $maxChars = 500; // We're just going to work with the first 500 characters of the text
 
 print("Beginning decryption...\n");
@@ -54,6 +54,7 @@ while (strlen($key_text) < 33) {
             print ("{ " . $char . " } ");
         }
         }
+	print("\n");
     }
     print("\nKey: " . $key_text);
     $char = fgets(STDIN);
