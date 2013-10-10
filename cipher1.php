@@ -4,13 +4,18 @@ require_once('hash_lib.php');
 
 $originalBytes = array();
 $keyBytes = array();
-$KEY_LENGTH = 8;
+$KEY_LENGTH = 8; // Key length is predetermined by a separate program
+// Our keyspace is only alphanumeric
 $keyspace = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\n\0";
 
 
-getHashArrayFromFile("ciphertext1", $originalBytes, $keyBytes, $map);
+getHashArrayFromFile("ciphertext1", $originalBytes);
 getKeySpace($keyBytes, $keyspace);
 
+/**
+ * ASSUMPTION: the plaintext is entirely human-readable ASCII. Therefore if any key doesn't decode a character into
+ * printable ASCII every mod_key_length_nth byte, it is not a usable key and we can throw it out
+ */
 $possible_characters = array();
 for ($i = 0; $i < $KEY_LENGTH; $i++) {
     foreach ($keyBytes as $key) {
@@ -19,8 +24,8 @@ for ($i = 0; $i < $KEY_LENGTH; $i++) {
     }
 }
 
+// We compile our list of options for each key character into a list of possible keys
 $potential_keys = getAllKeys($possible_characters);
-
 
 // User intervention if we have multiple keys
 if (count($potential_keys) > 1 ) {
@@ -38,5 +43,5 @@ if (count($potential_keys) > 1 ) {
         print($decryption_candidate);
     }
 } else {
-    //only one key logic
+    //only one key logic - I left this unimplemented because I knew it was not the case and would be wasted effort
 }
