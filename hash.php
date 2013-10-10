@@ -31,7 +31,6 @@ foreach ($keyBytes as $keys) {
 $l++;
 }
 
-
 $possible_characters = array();
 for ($i = 0; $i < $KEY_LENGTH; $i++) {
     foreach ($alphanumeric_keys[$i] as $key) {
@@ -40,18 +39,24 @@ for ($i = 0; $i < $KEY_LENGTH; $i++) {
     }
 }
 
-$potential_keys = getAllKeys($possible_characters);
+print_r($possible_characters);
+die();
+
+
 
 if (count($potential_keys) > 1 ) {
-    print("Choose a key to try: \n");
+    $key_ind = "";
+    while($key_ind != "q") {
+    print("Choose a key to try [q to quit]: \n");
     $i = 0;
     foreach ($potential_keys as $key) {
         print ("[" . $i . "] " . $key);
         $i++;
     }
     $key_ind = trim(fgets(STDIN));
-    $decryption_candidate = decryptWithKey("2brodsky", $originalBytes, $map);
+    $decryption_candidate = decryptWithKey($potential_keys[$key_ind], $originalBytes, $map);
     print($decryption_candidate);
+    }
 }
 
 /*$possible_characters = $alphanumeric_keys;
