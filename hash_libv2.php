@@ -55,9 +55,12 @@ array(0xa, 0xd, 0xe, 0x9, 0xf, 0x7, 0x6, 0x8, 0x4, 0x5, 0x1, 0x0, 0x2, 0xb, 0x3,
 array(0xf, 0x4, 0x1, 0x6, 0x0, 0x2, 0x3, 0x7, 0xb, 0xa, 0x8, 0x9, 0xd, 0xe, 0xc, 0x5));
 
 
-function getHashArrayFromFile($filename, &$originalBytes, $i = 0) {
+function getHashArrayFromFile($filename, &$originalBytes, $i = 0, $MAX = false) {
     $file = fopen($filename, "r");
     while (!feof($file)) {
+        if ($MAX && (int)$MAX <= $i) {
+            break;
+        }
         $raw_byte = fread($file, 1);
         if (feof($file)) break;
         //Converting it to a binary string, adding 0 to left if not 8 bits
@@ -76,6 +79,14 @@ function getKeySpace(&$keyBytes, $allowed_chars) {
     }
 
     return $keyBytes;
+}
+
+function decodeKey($plain, $originalByte, $hashMap) {
+    $upper_ind = bindec($plain->getUpper());
+    $lower_ind = bindec($plain->getLower());
+    $key_lower = array_search(bindec($originalByte->getUpper()), $hashMap[$upper_ind]);
+    $key_upper = array_search(bindec($originalByte->getLower()), $hashMap[$lower_ind]);
+    return HashByte::fromTwoDecimals($key_upper, $key_lower);
 }
 
 /**
@@ -131,18 +142,16 @@ function determinePotentialKeyCharactersForByte($keys, $originalByte, $hashMap) 
         Checks if every byte decoded with predicted key is printable ASCII.
 */
 function assertKeyCharacter($key, $key_position, $key_length, $originalBytes, $map) {
+    $decoded_bytes = array();
 	for ($i = 0; $i < count($originalBytes); $i++) {
 		if (($i % $key_length) != $key_position) { continue; }
+        $decoded = decodeByte($key, $originalBytes[$i], $map);
 
-		$decoded = decodeByte($key, $originalBytes[$i], $map);
-
-		if (isPrintable($decoded) !== FALSE) {
-            continue;
-        }
-		else return false;
+        if (isPrintable($decoded));
+		$decoded_bytes[$i] = chr($decoded);
 	}
 
-	return $key;
+    return $decoded_bytes;
 }
 
 

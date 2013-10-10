@@ -55,9 +55,12 @@ array(0xa, 0xd, 0xe, 0x9, 0xf, 0x7, 0x6, 0x8, 0x4, 0x5, 0x1, 0x0, 0x2, 0xb, 0x3,
 array(0xf, 0x4, 0x1, 0x6, 0x0, 0x2, 0x3, 0x7, 0xb, 0xa, 0x8, 0x9, 0xd, 0xe, 0xc, 0x5));
 
 
-function getHashArrayFromFile($filename, &$originalBytes, $i = 0) {
+function getHashArrayFromFile($filename, &$originalBytes, $i = 0, $MAX = false) {
     $file = fopen($filename, "r");
     while (!feof($file)) {
+        if ($MAX && (int)$MAX <= $i) {
+            break;
+        }
         $raw_byte = fread($file, 1);
         if (feof($file)) break;
         //Converting it to a binary string, adding 0 to left if not 8 bits
@@ -131,18 +134,30 @@ function determinePotentialKeyCharactersForByte($keys, $originalByte, $hashMap) 
         Checks if every byte decoded with predicted key is printable ASCII.
 */
 function assertKeyCharacter($key, $key_position, $key_length, $originalBytes, $map) {
-	for ($i = 0; $i < count($originalBytes); $i++) {
-		if (($i % $key_length) != $key_position) { continue; }
 
-		$decoded = decodeByte($key, $originalBytes[$i], $map);
+    $i = $key_position;
+    $successful_decryptions = 0;
+    $total_attempts = 0;
+    while ($i < count($originalBytes)) {
+        $decoded = decodeByte($key, $originalBytes[$i], $map);
 
-		if (isPrintable($decoded) !== FALSE) {
-            continue;
+        if (isPrintable($decoded) !== FALSE) {
+            $successful_decryptions++;
         }
-		else return false;
-	}
+        $total_attempts++;
+        $i += $key_length;
+    }
 
-	return $key;
+    if ($total_attempts == 0) {
+        $total_attempts = 1;
+    }
+
+    $success = ($successful_decryptions / $total_attempts) * 1000;
+    if ($success < 0.8) {
+        return false;
+    }
+    return [ 'success' => $success, 'key' => chr($key->getASCII()) ];
+
 }
 
 
